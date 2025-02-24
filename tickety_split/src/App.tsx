@@ -1,7 +1,11 @@
 import Map from "./components/Map"
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
+const queryClient = new QueryClient();
 
 export default function App() {
   return (
-    <Map />
-  )
+    <QueryClientProvider client={queryClient}><Map />
+    </QueryClientProvider>)
+
 }

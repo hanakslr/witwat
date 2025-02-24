@@ -8,3 +8,9 @@ Front end for witwat.
 npm install
 npm run dev
 ```
+
+The server needs to be up and running as well. 
+```
+cd ../dispatch
+cargo run
+```
