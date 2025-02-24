@@ -1,9 +1,16 @@
 # What if there was a train? aka witwat
 
-This is a website for the What if there was a train? project.
+Front end for witwat.
 
 ## Development
 
 ```bash
+npm install
 npm run dev
+```
+
+The server needs to be up and running as well. 
+```
+cd ../dispatch
+cargo run
 ```

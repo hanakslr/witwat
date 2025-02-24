@@ -1,0 +1,5 @@
+`dispatch` is the backend server for witwat.
+
+To run locally `cargo run` will serve up locally on `http://127.0.0.1:8080/`
+
+To run with hot-reloading use `watchexec -e rs -r cargo run`.
