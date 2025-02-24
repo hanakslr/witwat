@@ -1,12 +1,7 @@
-import { HomePage } from './pages/HomePage'
+import Map from "./components/Map"
 
-function App() {
-
+export default function App() {
   return (
-    <>
-      <HomePage />
-    </>
+    <Map />
   )
 }
-
-export default App
