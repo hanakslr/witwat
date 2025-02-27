@@ -1,8 +1,3 @@
-variable "github_repo" {
-  description = "GitHub repository in 'owner/repo' format"
-  type        = string
-}
-
 variable "project_id" {
   description = "The ID of the GCP project"
   type        = string
@@ -21,11 +16,16 @@ variable "cluster_name" {
 variable "node_count" {
   description = "Number of nodes in the cluster"
   type        = number
-  default     = 2
+  default     = 1
 }
 
 variable "machine_type" {
   description = "Machine type for the nodes"
   type        = string
-  default     = "e2-micro"  # Smallest general-purpose machine type
-} 
+  default     = "e2-medium"
+}
+
+variable "k8s_master_allowed_ip" {
+  description = "IP address allowed to access the k8s control plane"
+  type        = string
+}
