@@ -1,6 +1,6 @@
 # GKE cluster
 data "google_container_engine_versions" "gke_version" {
-  location = "${var.region}-b"
+  location       = "${var.region}-b"
   version_prefix = "1.27."
 }
 
@@ -23,11 +23,11 @@ resource "google_container_cluster" "primary" {
 
 # Separately Managed Node Pool
 resource "google_container_node_pool" "primary_nodes" {
-  name       = google_container_cluster.primary.name
-  location   = "${var.region}-b"
-  cluster    = google_container_cluster.primary.name
+  name     = google_container_cluster.primary.name
+  location = "${var.region}-b"
+  cluster  = google_container_cluster.primary.name
   
-  version = data.google_container_engine_versions.gke_version.release_channel_default_version["STABLE"]
+  version    = data.google_container_engine_versions.gke_version.release_channel_default_version["STABLE"]
   node_count = var.node_count
 
   node_config {
