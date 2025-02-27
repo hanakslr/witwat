@@ -18,6 +18,13 @@ resource "google_container_cluster" "primary" {
   network    = google_compute_network.vpc.name
   subnetwork = google_compute_subnetwork.subnet.name
 
+  # Prometheus monitoring takes a lot of cpu
+  monitoring_config {
+    managed_prometheus {
+      enabled = false # Explicitly disable managed prometheus
+    }
+  }
+
   private_cluster_config {
     enable_private_nodes    = true
     enable_private_endpoint = false
