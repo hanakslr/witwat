@@ -1,9 +1,12 @@
-provider "google" {
-  project = var.project_id
+# Enable the IAM Workforce Identity Federation API
+resource "google_project_service" "workload_identity" {
+  service            = "iam.googleapis.com"
+  disable_on_destroy = false
 }
 
 # Workload Identity Pool
 resource "google_iam_workload_identity_pool" "github_pool" {
+  depends_on                = [google_project_service.workload_identity]
   provider                  = google
   project                   = var.project_id
   workload_identity_pool_id = "github-actions-pool"
@@ -15,7 +18,7 @@ resource "google_iam_workload_identity_pool" "github_pool" {
 resource "google_iam_workload_identity_pool_provider" "github_provider" {
   provider                           = google
   project                            = var.project_id
-  workload_identity_pool_id          = google_iam_workload_identity_pool.github_pool.id
+  workload_identity_pool_id          = google_iam_workload_identity_pool.github_pool.workload_identity_pool_id
   workload_identity_pool_provider_id = "github-provider"
   display_name                       = "GitHub OIDC Provider"
   description                        = "Allows Github Actions to authenticate using OIDC"
@@ -25,11 +28,20 @@ resource "google_iam_workload_identity_pool_provider" "github_provider" {
 
   # This is how GKE knows to read what is in the token that gh actions provides.
   attribute_mapping = {
-    "google.subject"       = "assertion.sub"
-    "attribute.repository" = "assertion.repository"
-    "attribute.actor"      = "assertion.actor"
-    "attribute.aud"        = "assertion.aud"
+    "google.subject"             = "assertion.sub"
+    "attribute.repository"       = "assertion.repository"
+    "attribute.repository_owner" = "assertion.repository_owner"
+    "attribute.actor"            = "assertion.actor"
+    "attribute.aud"              = "assertion.aud"
   }
+
+  # GH uses a single issuer URL - so some claims in the OIDC token may not be unique specifically to my deployment/org
+  # These conditions are required to protect against spoofing - asserting that the action is from my repo and main branch
+  attribute_condition = format(
+    "assertion.ref==%q && assertion.repository==%q",
+    "refs/heads/main",
+    var.github_repo
+  )
 }
 
 # Create a Service Account for GitHub Actions
