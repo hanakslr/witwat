@@ -1,0 +1,15 @@
+FROM rust:1.85
+
+WORKDIR /app
+
+# Copy the whole project
+COPY . .
+
+# Build and run
+RUN cargo build
+
+RUN cargo install cargo-watch
+
+EXPOSE 8080
+
+CMD ["cargo", "watch", "-x", "run"] 

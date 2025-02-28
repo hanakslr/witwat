@@ -6,8 +6,6 @@ services:
     build:
       context: ./dispatch
       dockerfile: Dockerfile
-    restart: unless-stopped
-    volumes:
-      - ./dispatch:/app
+    restart: always
     ports:
       - "8080:8080"
