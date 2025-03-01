@@ -16,9 +16,6 @@ services:
     restart: always
     environment:
       - VITE_API_URL=http://api:8080
-    volumes:
-      - ./tickety_split:/app
-      - /app/node_modules
     networks:
       - witwat
     ports:

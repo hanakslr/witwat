@@ -1,4 +1,4 @@
-name: witwat-dev
+name: witwat
 
 services:
   api:
