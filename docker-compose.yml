@@ -1,11 +1,34 @@
 name: witwat
 
 services:
-  # api
-  dispatch:
+  api:
     build:
       context: ./dispatch
       dockerfile: Dockerfile
     restart: always
+    networks:
+      - witwat
+
+  frontend:
+    build:
+      context: ./tickety_split
+      dockerfile: Dockerfile
+    restart: always
+    environment:
+      - VITE_API_URL=http://api:8080
+    volumes:
+      - ./tickety_split:/app
+      - /app/node_modules
+    networks:
+      - witwat
     ports:
-      - "8080:8080"
+      - 80:80
+    depends_on:
+      - api
+
+networks:
+  witwat:
+    driver: bridge
+
+
+  

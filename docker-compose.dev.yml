@@ -21,6 +21,8 @@ services:
       context: ./tickety_split
       dockerfile: Dockerfile.dev
     restart: unless-stopped
+    environment:
+      - VITE_API_URL=http://localhost:8080
     volumes:
       - ./tickety_split:/app
       - /app/node_modules
