@@ -1,8 +1,7 @@
-name: witwat
+name: witwat-dev
 
 services:
-  # api
-  dispatch:
+  api:
     build:
       context: ./dispatch
       dockerfile: Dockerfile.dev
@@ -14,3 +13,25 @@ services:
     environment:
       - RUST_BACKTRACE=1
       - RUST_ENV=development
+    networks:
+      - witwat
+
+  frontend:
+    build:
+      context: ./tickety_split
+      dockerfile: Dockerfile.dev
+    restart: unless-stopped
+    volumes:
+      - ./tickety_split:/app
+      - /app/node_modules
+    networks:
+      - witwat
+    ports:
+      - 5173:5173
+    depends_on:
+      - api
+
+networks:
+  witwat:
+    driver: bridge
+
