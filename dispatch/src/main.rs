@@ -53,12 +53,13 @@ async fn railways() -> impl Responder {
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
+    println!("Starting server at http://0.0.0.0:8080");
     HttpServer::new(|| {
         let cors = Cors::default().allowed_origin("http://localhost:5173");
 
         App::new().wrap(cors).service(hello).service(railways)
     })
-    .bind(("127.0.0.1", 8080))?
+    .bind(("0.0.0.0", 8080))?
     .run()
     .await
 }

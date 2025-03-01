@@ -1,0 +1,28 @@
+# Build artifacts
+target/
+**/*.rs.bk
+
+# Git
+.git/
+.gitignore
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Debug files
+*.pdb
+
+# Environment files
+.env
+*.env
+
+# Docker files themselves
+Dockerfile
+.dockerignore
+
+# Misc
+*.log
+.DS_Store 
