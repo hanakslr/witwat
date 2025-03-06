@@ -4,6 +4,12 @@ data "google_container_engine_versions" "gke_version" {
   version_prefix = "1.27."
 }
 
+# GKE service account
+resource "google_service_account" "gke_node_pool_sa" {
+  account_id   = "gke-node-pool-sa" # Service account name
+  display_name = "GKE Node Pool Service Account"
+}
+
 # Create a minimal GKE cluster
 resource "google_container_cluster" "primary" {
   name     = var.cluster_name
@@ -64,10 +70,29 @@ resource "google_container_node_pool" "primary_nodes" {
       env = var.project_id
     }
 
-    machine_type = var.machine_type
-    tags         = ["gke-node", "${var.project_id}-gke"]
+    machine_type    = var.machine_type
+    service_account = google_service_account.gke_node_pool_sa.email # Use the custom service account
+
+    tags = ["gke-node", "${var.project_id}-gke"]
     metadata = {
       disable-legacy-endpoints = "true"
     }
   }
+}
+
+## Our image container registry
+# Enable the API
+resource "google_project_service" "gcr" {
+  project = var.project_id
+  service = "containerregistry.googleapis.com"
+}
+
+# IAM permissions for GKE to access GCR
+resource "google_project_iam_binding" "gke_registry" {
+  project = var.project_id
+  role    = "roles/storage.objectViewer"
+
+  members = [
+    "serviceAccount:${google_service_account.gke_node_pool_sa.email}",
+  ]
 }
