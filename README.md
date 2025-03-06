@@ -38,3 +38,8 @@ Server changes aren't set up with hot reloading yet. To get them to apply run th
 docker build -t dispatch:dev -f ./dispatch/Dockerfile.dev ./dispatch
 kubectl delete pod -l app=dispatch`
 ```
+
+Other useful commands:
+
+- To switch to minikkube context `eval $(minikube docker-env)`
+- to switch back to docker `unset DOCKER_HOST`
