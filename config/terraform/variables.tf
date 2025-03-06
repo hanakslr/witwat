@@ -29,3 +29,8 @@ variable "k8s_master_allowed_ip" {
   description = "IP address allowed to access the k8s control plane"
   type        = string
 }
+
+variable "artifact_registry_repository_name" {
+  description = "Name of the repo in the artifact registry for application images"
+  type        = string
+}

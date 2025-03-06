@@ -80,19 +80,28 @@ resource "google_container_node_pool" "primary_nodes" {
   }
 }
 
-## Our image container registry
+## Our image artifact registry
 # Enable the API
-resource "google_project_service" "gcr" {
+resource "google_project_service" "artifactregistry" {
   project = var.project_id
-  service = "containerregistry.googleapis.com"
+  service = "artifactregistry.googleapis.com"
 }
 
-# IAM permissions for GKE to access GCR
-resource "google_project_iam_binding" "gke_registry" {
-  project = var.project_id
-  role    = "roles/storage.objectViewer"
+resource "google_artifact_registry_repository" "image-repo" {
+  location      = var.region
+  repository_id = var.artifact_registry_repository_name
+  description   = "Repository to host application images"
+  format        = "DOCKER"
 
-  members = [
-    "serviceAccount:${google_service_account.gke_node_pool_sa.email}",
-  ]
+  depends_on = [google_project_service.artifactregistry]
 }
+
+# IAM policy for Artifact Registry
+resource "google_artifact_registry_repository_iam_member" "gke_repository_access" {
+  location   = google_artifact_registry_repository.image-repo.location
+  repository = google_artifact_registry_repository.image-repo.name
+  role       = "roles/artifactregistry.reader"
+  member     = "serviceAccount:${google_service_account.gke_node_pool_sa.email}"
+}
+
+
