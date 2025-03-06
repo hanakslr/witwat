@@ -54,10 +54,10 @@ resource "google_container_cluster" "primary" {
 # Separately Managed Node Pool
 resource "google_container_node_pool" "primary_nodes" {
   name     = google_container_cluster.primary.name
+  version  = "1.31.5-gke.1169000"
   location = "${var.region}-b"
   cluster  = google_container_cluster.primary.name
 
-  version    = data.google_container_engine_versions.gke_version.release_channel_default_version["STABLE"]
   node_count = var.node_count
 
   node_config {
