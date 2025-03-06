@@ -28,7 +28,7 @@ eval $(minikube docker-env)
 docker build -t dispatch:dev -f ./dispatch/Dockerfile.dev ./dispatch && docker build -t tickety_split:dev -f ./tickety_split/Dockerfile.dev ./tickety_split
 ```
 
-Then start everything up with `kubectl apply -f config/k8s/witwat.yaml`
+Then start everything up with `kubectl apply -f config/k8s/`
 
 To access the deployments run `minikube tunnel` and to view the status `minikube dashboard`.
 

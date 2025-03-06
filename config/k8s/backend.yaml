@@ -23,29 +23,6 @@ spec:
             - name: RUST_ENV
               value: "development"
 ---
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: tickety-split
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: tickety-split
-  template:
-    metadata:
-      labels:
-        app: tickety-split
-    spec:
-      containers:
-        - name: tickety-split
-          image: tickety_split:dev
-          ports:
-            - containerPort: 5173
-          env:
-            - name: VITE_API_URL
-              value: "http://127.0.0.1:8080"
----
 apiVersion: v1
 kind: Service
 metadata:
@@ -56,16 +33,4 @@ spec:
   ports:
     - port: 8080
       targetPort: 8080
-  type: LoadBalancer
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: tickety-split
-spec:
-  selector:
-    app: tickety-split
-  ports:
-    - port: 5173
-      targetPort: 5173
   type: LoadBalancer
