@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dispatch
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dispatch
+  template:
+    metadata:
+      labels:
+        app: dispatch
+    spec:
+      containers:
+        - name: dispatch
+          image: dispatch:dev
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+          env:
+            - name: RUST_BACKTRACE
+              value: "1"
+            - name: RUST_ENV
+              value: "development"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tickety-split
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tickety-split
+  template:
+    metadata:
+      labels:
+        app: tickety-split
+    spec:
+      containers:
+        - name: tickety-split
+          image: tickety_split:dev
+          ports:
+            - containerPort: 5173
+          env:
+            - name: VITE_API_URL
+              value: "http://192.168.49.2:8080"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dispatch
+spec:
+  selector:
+    app: dispatch
+  ports:
+    - port: 8080
+      targetPort: 8080
+  type: LoadBalancer
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tickety-split
+spec:
+  selector:
+    app: tickety-split
+  ports:
+    - port: 5173
+      targetPort: 5173
+  type: LoadBalancer
