@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: tickety-split
+  namespace: {{.Values.namespace}}
 spec:
   replicas: 1
   selector:
@@ -14,17 +15,18 @@ spec:
     spec:
       containers:
         - name: tickety-split
-          image: tickety_split:dev
+          image: {{.Values.frontendImageName}}
           ports:
             - containerPort: 5173
           env:
             - name: VITE_API_URL
-              value: "http://127.0.0.1:8080"
+              value: {{.Values.apiUrl}}
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: tickety-split
+  namespace: {{.Values.namespace}}
 spec:
   selector:
     app: tickety-split

@@ -1,0 +1,4 @@
+apiVersion: v2
+name: witwat
+type: application
+version: 0.1.0

@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: dispatch
+  namespace: {{.Values.namespace}}
 spec:
   replicas: 1
   selector:
@@ -14,19 +15,20 @@ spec:
     spec:
       containers:
         - name: dispatch
-          image: dispatch:dev
+          image: {{.Values.apiImageName}}
           ports:
             - containerPort: 8080
           env:
             - name: RUST_BACKTRACE
-              value: "1"
+              value: {{.Values.rustBacktrace}}
             - name: RUST_ENV
-              value: "development"
+              value: {{.Values.rustEnv}}
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: dispatch
+  namespace: {{.Values.namespace}}
 spec:
   selector:
     app: dispatch

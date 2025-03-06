@@ -1,0 +1,6 @@
+namespace: dev
+apiUrl: http://127.0.0.1:8080
+rustEnv: development
+rustBacktrace: 1
+frontEndImageName: tickety_split-dev
+apiImageName: dispatch-dev

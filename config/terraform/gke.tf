@@ -104,4 +104,7 @@ resource "google_artifact_registry_repository_iam_member" "gke_repository_access
   member     = "serviceAccount:${google_service_account.gke_node_pool_sa.email}"
 }
 
-
+# Output the repository URL for use in other configurations
+output "repository_url" {
+  value = "${var.region}-docker.pkg.dev/${var.project_id}/${google_artifact_registry_repository.my-repo.repository_id}"
+}
