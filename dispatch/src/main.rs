@@ -56,8 +56,8 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(|| {
         let cors = Cors::default()
             .allow_any_origin()
-            .allow_any_method()
-            .allow_any_header();
+            .allowed_methods(vec!["GET"])
+            .allowed_headers(vec!["Content-Type"]);
 
         App::new().wrap(cors).service(hello).service(railways)
     })
