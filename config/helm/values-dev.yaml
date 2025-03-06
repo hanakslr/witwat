@@ -4,3 +4,4 @@ rustEnv: development
 rustBacktrace: 1
 frontEndImageName: tickety_split-dev
 apiImageName: dispatch-dev
+containerRegistry:

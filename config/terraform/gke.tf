@@ -4,10 +4,9 @@ data "google_container_engine_versions" "gke_version" {
   version_prefix = "1.27."
 }
 
-# GKE service account
-resource "google_service_account" "gke_node_pool_sa" {
-  account_id   = "gke-node-pool-sa" # Service account name
-  display_name = "GKE Node Pool Service Account"
+# Get project information
+data "google_project" "project" {
+  project_id = var.project_id
 }
 
 # Create a minimal GKE cluster
@@ -64,14 +63,14 @@ resource "google_container_node_pool" "primary_nodes" {
     oauth_scopes = [
       "https://www.googleapis.com/auth/logging.write",
       "https://www.googleapis.com/auth/monitoring",
+      "https://www.googleapis.com/auth/devstorage.read_only" # Add this scope for container registry access
     ]
 
     labels = {
       env = var.project_id
     }
 
-    machine_type    = var.machine_type
-    service_account = google_service_account.gke_node_pool_sa.email # Use the custom service account
+    machine_type = var.machine_type
 
     tags = ["gke-node", "${var.project_id}-gke"]
     metadata = {
@@ -96,15 +95,37 @@ resource "google_artifact_registry_repository" "image-repo" {
   depends_on = [google_project_service.artifactregistry]
 }
 
-# IAM policy for Artifact Registry
+# IAM policy for Artifact Registry using default compute service account
 resource "google_artifact_registry_repository_iam_member" "gke_repository_access" {
   location   = google_artifact_registry_repository.image-repo.location
   repository = google_artifact_registry_repository.image-repo.name
   role       = "roles/artifactregistry.reader"
-  member     = "serviceAccount:${google_service_account.gke_node_pool_sa.email}"
+  member     = "serviceAccount:${data.google_project.project.number}-compute@developer.gserviceaccount.com"
+}
+
+# Project-level permissions for Artifact Registry
+resource "google_project_iam_member" "artifact_registry_reader" {
+  project = var.project_id
+  role    = "roles/artifactregistry.reader"
+  member  = "serviceAccount:${data.google_project.project.number}-compute@developer.gserviceaccount.com"
+}
+
+# Additional permissions that might be needed
+resource "google_project_iam_member" "storage_object_viewer" {
+  project = var.project_id
+  role    = "roles/storage.objectViewer"
+  member  = "serviceAccount:${data.google_project.project.number}-compute@developer.gserviceaccount.com"
 }
 
 # Output the repository URL for use in other configurations
 output "repository_url" {
-  value = "${var.region}-docker.pkg.dev/${var.project_id}/${google_artifact_registry_repository.my-repo.repository_id}"
+  value = "${var.region}-docker.pkg.dev/${var.project_id}/${google_artifact_registry_repository.image-repo.repository_id}"
+}
+
+# Generate Helm values file
+resource "local_file" "helm_values" {
+  content = templatefile("${path.module}/helm-values.tftpl", {
+    repository_url = "${var.region}-docker.pkg.dev/${var.project_id}/${google_artifact_registry_repository.image-repo.repository_id}/"
+  })
+  filename = "${path.module}/../helm/secretValues.yaml"
 }

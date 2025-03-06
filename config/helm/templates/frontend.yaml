@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: tickety-split
-          image: {{.Values.frontendImageName}}
+          image: {{.Values.containerRegistry}}{{.Values.frontendImageName}}
           ports:
             - containerPort: 5173
           env:

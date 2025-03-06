@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: dispatch
-  namespace: {{.Values.namespace}}
+  namespace: {{ .Values.namespace }}
 spec:
   replicas: 1
   selector:
@@ -15,24 +15,24 @@ spec:
     spec:
       containers:
         - name: dispatch
-          image: {{.Values.apiImageName}}
+          image: {{ .Values.containerRegistry }}{{ .Values.apiImageName }}
           ports:
             - containerPort: 8080
           env:
             - name: RUST_BACKTRACE
-              value: {{.Values.rustBacktrace}}
+              value: {{ .Values.rustBacktrace }}
             - name: RUST_ENV
-              value: {{.Values.rustEnv}}
+              value: {{ .Values.rustEnv }}
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: dispatch
-  namespace: {{.Values.namespace}}
+  namespace: {{ .Values.namespace }}
 spec:
   selector:
     app: dispatch
   ports:
     - port: 8080
       targetPort: 8080
-  type: LoadBalancer
+  type: ClusterIP

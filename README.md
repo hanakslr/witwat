@@ -43,3 +43,12 @@ Other useful commands:
 
 - To switch to minikkube context `eval $(minikube docker-env)`
 - to switch back to docker `unset DOCKER_HOST`
+
+## Deploy to GKE
+
+Helm manages our deploys. There are some values that terraform outputs that we want to use. They aren't super secret, I just don't want them in source control.
+
+```
+helm upgrade witwat-dev config/helm --values config/helm/values-prod.yaml --values config/helm/secretValues.yaml
+```
+
