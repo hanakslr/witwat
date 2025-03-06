@@ -19,5 +19,4 @@ COPY src src/
 
 EXPOSE 8080
 
-# Add --poll flag for more reliable file watching in Docker
-CMD ["cargo", "watch", "--poll", "-x", "run"] 
+CMD ["cargo", "run"] 
