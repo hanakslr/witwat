@@ -23,15 +23,16 @@ jobs:
         with:
           workload_identity_provider: ${{ secrets.GCP_WIP_PROVIDER }}
           project_id: ${{ secrets.GCP_PROJECT }}
-      
-      - name: Setup gcloud
-        uses: 'google-github-actions/setup-gcloud@v2'
-        with:
-          version: '>= 363.0.0'
 
-        # Configure Docker to use the gcloud command-line tool as a credential
-        # helper for authentication
-        - run: |-
+      - name: Setup gcloud
+        uses: "google-github-actions/setup-gcloud@v2"
+        with:
+          version: ">= 363.0.0"
+
+      # Configure Docker to use the gcloud command-line tool as a credential
+      # helper for authentication
+      - name: Configure Docker
+        run: |-
           gcloud --quiet auth configure-docker
 
       # Get the GKE credentials so we can deploy to the cluster
