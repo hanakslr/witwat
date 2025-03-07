@@ -16,6 +16,7 @@ spec:
       containers:
         - name: dispatch
           image: {{ .Values.containerRegistry }}{{ .Values.apiImageName }}
+          imagePullPolicy: {{.Values.imagePullPolicy}}
           ports:
             - containerPort: 8080
           env:

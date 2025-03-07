@@ -1,4 +1,5 @@
 namespace: dev
+imagePullPolicy: IfNotPresent
 frontendServiceType: LoadBalancer
 backendServiceType: LoadBalancer
 apiUrl: http://127.0.0.1:8080
