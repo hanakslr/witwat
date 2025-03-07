@@ -44,10 +44,6 @@ jobs:
       - name: Configure Docker
         run: |-
           gcloud auth configure-docker ${{ env.GAR_LOCATION }}-docker.pkg.dev --quiet
-          # Debug commands
-
-          echo "Checking Docker info..."
-          docker info || true
 
       - name: Build and push images
         run: |
