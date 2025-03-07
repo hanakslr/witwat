@@ -1,5 +1,10 @@
 variable "github_repo" {
-  description = "GitHub repository in 'owner/repo' format"
+  description = "Name of the repo"
+  type        = string
+}
+
+variable "github_owner" {
+  description = "Github owner or organization"
   type        = string
 }
 

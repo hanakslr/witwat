@@ -9,7 +9,7 @@ resource "google_iam_workload_identity_pool" "github_pool" {
   depends_on                = [google_project_service.workload_identity]
   provider                  = google
   project                   = var.project_id
-  workload_identity_pool_id = "github-actions-pool"
+  workload_identity_pool_id = "github-pool"
   display_name              = "Github Actions Pool"
   description               = "Workload Identity Pool for Github Actions"
 }
@@ -40,7 +40,7 @@ resource "google_iam_workload_identity_pool_provider" "github_provider" {
   attribute_condition = format(
     "assertion.ref==%q && assertion.repository==%q",
     "refs/heads/main",
-    var.github_repo
+    "${var.github_owner}/${var.github_repo}"
   )
 }
 
@@ -55,7 +55,7 @@ resource "google_service_account_iam_binding" "github_wi_binding" {
   service_account_id = google_service_account.github_sa.name
   role               = "roles/iam.workloadIdentityUser"
   members = [
-    "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.github_pool.name}/attribute.repository/${var.github_repo}"
+    "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.github_pool.name}/attribute.repository/${var.github_owner}/${var.github_repo}"
   ]
 }
 
@@ -68,4 +68,22 @@ resource "google_project_iam_member" "gke_roles" {
   project = var.project_id
   role    = each.value
   member  = "serviceAccount:${google_service_account.github_sa.email}"
+}
+
+
+## Put values in Github Actions Secrets so the workflow can use them
+data "github_actions_public_key" "gh_public_key" {
+  repository = var.github_repo
+}
+
+resource "github_actions_secret" "gcp_sa_email" {
+  repository      = var.github_repo
+  secret_name     = "GCP_SERVICE_ACCOUNT_EMAIL"
+  plaintext_value = google_service_account.github_sa.email
+}
+
+resource "github_actions_secret" "wip_provider" {
+  repository      = var.github_repo
+  secret_name     = "GCP_WIP_PROVIDER"
+  plaintext_value = "projects/${var.project_id}/locations/global/workloadIdentityPools/${google_iam_workload_identity_pool.github_pool.workload_identity_pool_id}/providers/github-provider"
 }
