@@ -4,6 +4,6 @@ backendServiceType: ClusterIP
 apiUrl: http://dispatch:8080
 rustEnv: production
 rustBackTrace: 0
-apiImageName: dispatch_dev:dev
+apiImageName: dispatch:latest
 frontendImageName: tickety_split:latest
 frontendPort: 3000
