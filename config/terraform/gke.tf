@@ -175,15 +175,19 @@ output "static_ip" {
   value = google_compute_global_address.default.address
 }
 
+locals {
+  repository_url = "${var.region}-docker.pkg.dev/${var.project_id}/${google_artifact_registry_repository.image-repo.repository_id}"
+}
+
 # Output the repository URL for use in other configurations
 output "repository_url" {
-  value = "${var.region}-docker.pkg.dev/${var.project_id}/${google_artifact_registry_repository.image-repo.repository_id}"
+  value = local.repository_url
 }
 
 # Generate Helm values file
 resource "local_file" "helm_values" {
   content = templatefile("${path.module}/helm-values.tftpl", {
-    repository_url = "${var.region}-docker.pkg.dev/${var.project_id}/${google_artifact_registry_repository.image-repo.repository_id}/"
+    repository_url = "${local.repository_url}/"
     static_ip      = google_compute_global_address.default.address
     domain_name    = var.domain_name
     project_id     = var.project_id

@@ -55,6 +55,15 @@ resource "google_service_account_iam_binding" "github_wi_binding" {
   ]
 }
 
+# Allow the service account to create tokens
+resource "google_service_account_iam_binding" "github_token_creator" {
+  service_account_id = google_service_account.github_sa.name
+  role               = "roles/iam.serviceAccountTokenCreator"
+  members = [
+    "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.github_pool.name}/attribute.repository/${var.github_owner}/${var.github_repo}"
+  ]
+}
+
 # Grant necessary GKE roles to the Service Account
 resource "google_project_iam_member" "gke_roles" {
   for_each = toset([
@@ -62,7 +71,7 @@ resource "google_project_iam_member" "gke_roles" {
     "roles/container.developer",     # Deploy workloads
     "roles/container.clusterViewer", # View cluster details
     "roles/container.clusterAdmin",  # Full access to GKE clusters
-    "roles/iam.serviceAccountTokenCreator"
+
   ])
   project = var.project_id
   role    = each.value
@@ -97,4 +106,16 @@ resource "github_actions_secret" "wip_provider" {
   repository      = var.github_repo
   secret_name     = "GCP_WIP_PROVIDER"
   plaintext_value = "projects/${data.google_project.project.number}/locations/global/workloadIdentityPools/${google_iam_workload_identity_pool.github_pool.workload_identity_pool_id}/providers/github-provider"
+}
+
+resource "github_actions_variable" "artifact_registry" {
+  repository    = var.github_repo
+  variable_name = "GAR_URL"
+  value         = local.repository_url
+}
+
+resource "github_actions_variable" "static_ip" {
+  repository    = var.github_repo
+  variable_name = "STATIC_PUBLIC_IP"
+  value         = google_compute_global_address.default.address
 }
