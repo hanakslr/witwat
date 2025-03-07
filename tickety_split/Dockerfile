@@ -1,26 +1,17 @@
-# Build stage
-FROM node:18-alpine as build
+FROM node:18-alpine
 
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
+COPY package.json .
 
-# ci - clean install
-RUN npm ci --only=production 
+RUN npm install
 
-# Copy source code
+RUN npm i -g serve
+
 COPY . .
 
-# Build the app
 RUN npm run build
 
-# Serve stage
-FROM nginx:alpine
+EXPOSE 3000
 
-# Copy built assets from build stage
-COPY --from=build /app/dist /usr/share/nginx/html
-
-EXPOSE 80
-
-CMD ["nginx", "-g", "daemon off;"] 
+CMD [ "serve", "-s", "dist" ]

@@ -4,4 +4,5 @@ apiUrl: http://dispatch:8080
 rustEnv: production
 rustBackTrace: 0
 apiImageName: dispatch_dev:dev
-frontendImageName: tickety-split_dev:dev
+frontendImageName: tickety_split:latest
+frontendPort: 3000

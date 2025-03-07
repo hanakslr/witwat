@@ -17,7 +17,7 @@ spec:
         - name: tickety-split
           image: {{.Values.containerRegistry}}{{.Values.frontendImageName}}
           ports:
-            - containerPort: 5173
+            - containerPort: {{.Values.frontendPort}} 
           env:
             - name: VITE_API_URL
               value: {{.Values.apiUrl}}
@@ -31,6 +31,6 @@ spec:
   selector:
     app: tickety-split
   ports:
-    - port: 5173
-      targetPort: 5173
+    - port: {{.Values.frontendPort}} 
+      targetPort: {{.Values.frontendPort}} 
   type: LoadBalancer
