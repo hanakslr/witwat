@@ -23,6 +23,14 @@ if [ -z "$LOCAL" ]; then
     echo "Using container registry: $CONTAINER_REGISTRY"
 fi
 
+# Get API URL from values-prod.yaml
+API_URL=$(grep "apiUrl:" config/helm/values-prod.yaml | awk '{print $2}')
+if [ -z "$API_URL" ]; then
+    echo "Error: Could not find apiUrl in values-prod.yaml"
+    exit 1
+fi
+echo "Using API URL: $API_URL"
+
 # Function to build and optionally push an image
 build_image() {
     local service=$1
@@ -34,7 +42,11 @@ build_image() {
         docker build -t ${service}:dev -f $dockerfile_path.dev $context_path
     else
         echo "Building $service for remote registry..."
-        docker build -t ${CONTAINER_REGISTRY}${service}:latest -f $dockerfile_path $context_path
+        if [ "$service" = "tickety_split" ]; then
+            docker build --build-arg VITE_API_URL=$API_URL -t ${CONTAINER_REGISTRY}${service}:latest -f $dockerfile_path $context_path
+        else
+            docker build -t ${CONTAINER_REGISTRY}${service}:latest -f $dockerfile_path $context_path
+        fi
         echo "Pushing $service to remote registry..."
         docker push ${CONTAINER_REGISTRY}${service}:latest
     fi
