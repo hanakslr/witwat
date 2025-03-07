@@ -24,6 +24,7 @@ jobs:
         with:
           workload_identity_provider: ${{ secrets.GCP_WIP_PROVIDER }}
           project_id: ${{ secrets.GCP_PROJECT }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT_EMAIL }}
 
       - name: Setup gcloud
         uses: "google-github-actions/setup-gcloud@v2"
