@@ -33,17 +33,6 @@ jobs:
           password: "${{ steps.auth.outputs.auth_token }}"
           registry: "${{ env.GAR_LOCATION }}-docker.pkg.dev"
 
-      - name: Setup gcloud
-        uses: "google-github-actions/setup-gcloud@v2"
-        with:
-          version: ">= 363.0.0"
-
-      # Configure Docker to use the gcloud command-line tool as a credential
-      # helper for authentication
-      - name: Configure Docker
-        run: |-
-          gcloud --quiet auth configure-docker
-
       # Get the GKE credentials so we can deploy to the cluster
       - name: "Set up GKE credentials"
         uses: "google-github-actions/get-gke-credentials@v2"
