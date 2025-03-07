@@ -11,9 +11,6 @@ RUN mkdir src && \
     cargo build && \
     rm -rf src
 
-# Install cargo-watch
-RUN cargo install cargo-watch
-
 # Now copy the real source code
 COPY src src/
 

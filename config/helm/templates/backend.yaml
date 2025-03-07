@@ -20,7 +20,7 @@ spec:
             - containerPort: 8080
           env:
             - name: RUST_BACKTRACE
-              value: {{ .Values.rustBacktrace }}
+              value: "{{ .Values.rustBacktrace }}"
             - name: RUST_ENV
               value: {{ .Values.rustEnv }}
 ---
@@ -35,4 +35,4 @@ spec:
   ports:
     - port: 8080
       targetPort: 8080
-  type: ClusterIP
+  type: {{ .Values.backendServiceType }}

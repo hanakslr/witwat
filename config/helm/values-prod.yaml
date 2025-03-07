@@ -1,4 +1,5 @@
 namespace: prod
+backendServiceType: ClusterIP
 apiUrl: http://dispatch:8080
 rustEnv: production
 rustBackTrace: 0

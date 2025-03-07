@@ -26,9 +26,9 @@ Then switch to the minikube context and build the docker images. The eval comman
 eval $(minikube docker-env)
 
 docker build -t dispatch:dev -f ./dispatch/Dockerfile.dev ./dispatch && docker build -t tickety_split:dev -f ./tickety_split/Dockerfile.dev ./tickety_split
-```
 
-Then start everything up with `kubectl apply -f config/k8s/`
+helm upgrade witwat-dev config/helm --values config/helm/values-dev.yaml
+```
 
 To access the deployments run `minikube tunnel` and to view the status `minikube dashboard`.
 
@@ -51,4 +51,3 @@ Helm manages our deploys. There are some values that terraform outputs that we w
 ```
 helm upgrade witwat-dev config/helm --values config/helm/values-prod.yaml --values config/helm/secretValues.yaml
 ```
-
