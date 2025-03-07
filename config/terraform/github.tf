@@ -97,5 +97,5 @@ resource "github_actions_secret" "gcp_sa_email" {
 resource "github_actions_secret" "wip_provider" {
   repository      = var.github_repo
   secret_name     = "GCP_WIP_PROVIDER"
-  plaintext_value = "projects/${var.project_id}/locations/global/workloadIdentityPools/${google_iam_workload_identity_pool.github_pool.workload_identity_pool_id}/providers/github-provider"
+  plaintext_value = "projects/${data.google_project.project.number}/locations/global/workloadIdentityPools/${google_iam_workload_identity_pool.github_pool.workload_identity_pool_id}/providers/github-provider"
 }
