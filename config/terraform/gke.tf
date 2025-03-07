@@ -47,6 +47,14 @@ resource "google_container_cluster" "primary" {
     # Let GKE choose the ranges automatically
   }
 
+  # Enable cloud load balancing - this is for application traffic routing. It enables our
+  # ingress controllers to create and manage load balancers that route traffic to the app.
+  addons_config {
+    http_load_balancing {
+      disabled = false
+    }
+  }
+
   deletion_protection = false
 }
 
@@ -167,7 +175,7 @@ output "repository_url" {
 resource "local_file" "helm_values" {
   content = templatefile("${path.module}/helm-values.tftpl", {
     repository_url = "${var.region}-docker.pkg.dev/${var.project_id}/${google_artifact_registry_repository.image-repo.repository_id}/"
-static_ip      = google_compute_global_address.default.address
+    static_ip      = google_compute_global_address.default.address
     domain_name    = var.domain_name
     project_id     = var.project_id
   })
