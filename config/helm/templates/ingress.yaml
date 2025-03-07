@@ -1,0 +1,47 @@
+{{- if eq .Values.namespace "prod" }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: app-ingress
+  namespace: {{.Values.namespace}}
+  annotations:
+    kubernetes.io/ingress.class: 'gce'
+    kubernetes.io/ingress.global-static-ip-name: '{{.Values.projectId}}-global-ip'
+    networking.gke.io/managed-certificates: '{{.Values.namespace}}-cert'
+spec:
+  ingressClassName: 'gce'
+  rules:
+    - http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: tickety-split
+                port:
+                  number: {{.Values.frontendPort}}
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: dispatch
+                port:
+                  number: 8080
+    - host: {{.Values.domainName}}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: tickety-split
+                port:
+                  number: {{.Values.frontendPort}}
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: dispatch
+                port:
+                  number: 8080
+{{- end }}

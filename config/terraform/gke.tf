@@ -117,6 +117,47 @@ resource "google_project_iam_member" "storage_object_viewer" {
   member  = "serviceAccount:${data.google_project.project.number}-compute@developer.gserviceaccount.com"
 }
 
+# Also we need to be explicit that this is the default node SA for the container
+resource "google_project_iam_member" "default_container_sa" {
+  project = var.project_id
+  role    = "roles/container.defaultNodeServiceAccount"
+  member  = "serviceAccount:${data.google_project.project.number}-compute@developer.gserviceaccount.com"
+}
+
+### Hooking up the domain
+
+# Reserve a static external IP address
+resource "google_compute_global_address" "default" {
+  name = "${var.project_id}-global-ip"
+}
+
+# Reference existing DNS zone using a data source
+data "google_dns_managed_zone" "default" {
+  name = var.cloud_dns_zone_name
+}
+
+# Add an A record pointing to our static IP
+resource "google_dns_record_set" "default" {
+  name         = "${var.domain_name}." # Note: must end with a dot
+  type         = "A"
+  ttl          = 300
+  managed_zone = data.google_dns_managed_zone.default.name
+  rrdatas      = [google_compute_global_address.default.address]
+}
+
+# SSL Certificate
+resource "google_compute_managed_ssl_certificate" "default" {
+  name = "${var.project_id}-cert"
+  managed {
+    domains = [var.domain_name]
+  }
+}
+
+# Output the static IP address
+output "static_ip" {
+  value = google_compute_global_address.default.address
+}
+
 # Output the repository URL for use in other configurations
 output "repository_url" {
   value = "${var.region}-docker.pkg.dev/${var.project_id}/${google_artifact_registry_repository.image-repo.repository_id}"
@@ -126,6 +167,9 @@ output "repository_url" {
 resource "local_file" "helm_values" {
   content = templatefile("${path.module}/helm-values.tftpl", {
     repository_url = "${var.region}-docker.pkg.dev/${var.project_id}/${google_artifact_registry_repository.image-repo.repository_id}/"
+static_ip      = google_compute_global_address.default.address
+    domain_name    = var.domain_name
+    project_id     = var.project_id
   })
   filename = "${path.module}/../helm/secretValues.yaml"
 }

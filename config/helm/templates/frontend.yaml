@@ -33,4 +33,4 @@ spec:
   ports:
     - port: {{.Values.frontendPort}} 
       targetPort: {{.Values.frontendPort}} 
-  type: LoadBalancer
+  type: {{.Values.frontendServiceType}}
