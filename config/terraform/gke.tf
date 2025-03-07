@@ -153,6 +153,15 @@ resource "google_dns_record_set" "default" {
   rrdatas      = [google_compute_global_address.default.address]
 }
 
+# Add another for our api subdomain
+resource "google_dns_record_set" "api" {
+  name         = "api.${var.domain_name}." # Note: must end with a dot
+  type         = "A"
+  ttl          = 300
+  managed_zone = data.google_dns_managed_zone.default.name
+  rrdatas      = [google_compute_global_address.default.address]
+}
+
 # SSL Certificate
 resource "google_compute_managed_ssl_certificate" "default" {
   name = "${var.project_id}-cert"
