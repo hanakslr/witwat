@@ -11,22 +11,6 @@ metadata:
 spec:
   ingressClassName: 'gce'
   rules:
-    - http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: tickety-split
-                port:
-                  number: {{.Values.frontendPort}}
-          - path: /api
-            pathType: Prefix
-            backend:
-              service:
-                name: dispatch
-                port:
-                  number: 8080
     - host: {{.Values.domainName}}
       http:
         paths:
