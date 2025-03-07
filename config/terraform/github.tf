@@ -71,7 +71,8 @@ resource "google_project_iam_member" "gke_roles" {
     "roles/container.developer",     # Deploy workloads
     "roles/container.clusterViewer", # View cluster details
     "roles/container.clusterAdmin",  # Full access to GKE clusters
-
+    "roles/artifactregistry.writer", # Push to Artifact Registry
+    "roles/artifactregistry.reader"  # Pull from Artifact Registry
   ])
   project = var.project_id
   role    = each.value
