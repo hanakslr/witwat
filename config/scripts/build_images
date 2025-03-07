@@ -1,0 +1,61 @@
+#!/bin/bash
+
+# Parse command line arguments
+while [[ "$#" -gt 0 ]]; do
+    case $1 in
+        --local) LOCAL=true ;;
+        *) echo "Unknown parameter: $1"; exit 1 ;;
+    esac
+    shift
+done
+
+# If not local, get the container registry from secretValues.yaml
+if [ -z "$LOCAL" ]; then
+    if [ ! -f "config/helm/secretValues.yaml" ]; then
+        echo "Error: config/helm/secretValues.yaml not found. Run terraform apply first."
+        exit 1
+    fi
+    CONTAINER_REGISTRY=$(grep "containerRegistry:" config/helm/secretValues.yaml | awk '{print $2}')
+    if [ -z "$CONTAINER_REGISTRY" ]; then
+        echo "Error: Could not find containerRegistry in secretValues.yaml"
+        exit 1
+    fi
+    echo "Using container registry: $CONTAINER_REGISTRY"
+fi
+
+# Get API URL from values-prod.yaml
+API_URL=$(grep "apiUrl:" config/helm/values-prod.yaml | awk '{print $2}')
+if [ -z "$API_URL" ]; then
+    echo "Error: Could not find apiUrl in values-prod.yaml"
+    exit 1
+fi
+echo "Using API URL: $API_URL"
+
+# Function to build and optionally push an image
+build_image() {
+    local service=$1
+    local dockerfile_path=$2
+    local context_path=$3
+    
+    if [ "$LOCAL" = true ]; then
+        echo "Building $service locally..."
+        docker build -t ${service}:dev -f $dockerfile_path.dev $context_path
+    else
+        echo "Building $service for remote registry..."
+        if [ "$service" = "tickety_split" ]; then
+            docker build --build-arg VITE_API_URL=$API_URL -t ${CONTAINER_REGISTRY}${service}:latest -f $dockerfile_path $context_path
+        else
+            docker build -t ${CONTAINER_REGISTRY}${service}:latest -f $dockerfile_path $context_path
+        fi
+        echo "Pushing $service to remote registry..."
+        docker push ${CONTAINER_REGISTRY}${service}:latest
+    fi
+}
+
+# Build dispatch
+build_image "dispatch" "./dispatch/Dockerfile" "./dispatch"
+
+# Build tickety-split
+build_image "tickety_split" "./tickety_split/Dockerfile" "./tickety_split"
+
+echo "Build process completed successfully!" 

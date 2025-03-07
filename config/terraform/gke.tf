@@ -4,6 +4,11 @@ data "google_container_engine_versions" "gke_version" {
   version_prefix = "1.27."
 }
 
+# Get project information
+data "google_project" "project" {
+  project_id = var.project_id
+}
+
 # Create a minimal GKE cluster
 resource "google_container_cluster" "primary" {
   name     = var.cluster_name
@@ -42,22 +47,31 @@ resource "google_container_cluster" "primary" {
     # Let GKE choose the ranges automatically
   }
 
+  # Enable cloud load balancing - this is for application traffic routing. It enables our
+  # ingress controllers to create and manage load balancers that route traffic to the app.
+  addons_config {
+    http_load_balancing {
+      disabled = false
+    }
+  }
+
   deletion_protection = false
 }
 
 # Separately Managed Node Pool
 resource "google_container_node_pool" "primary_nodes" {
   name     = google_container_cluster.primary.name
+  version  = "1.31.5-gke.1169000"
   location = "${var.region}-b"
   cluster  = google_container_cluster.primary.name
 
-  version    = data.google_container_engine_versions.gke_version.release_channel_default_version["STABLE"]
   node_count = var.node_count
 
   node_config {
     oauth_scopes = [
       "https://www.googleapis.com/auth/logging.write",
       "https://www.googleapis.com/auth/monitoring",
+      "https://www.googleapis.com/auth/devstorage.read_only" # Add this scope for container registry access
     ]
 
     labels = {
@@ -65,9 +79,114 @@ resource "google_container_node_pool" "primary_nodes" {
     }
 
     machine_type = var.machine_type
-    tags         = ["gke-node", "${var.project_id}-gke"]
+
+    tags = ["gke-node", "${var.project_id}-gke"]
     metadata = {
       disable-legacy-endpoints = "true"
     }
   }
+}
+
+## Our image artifact registry
+# Enable the API
+resource "google_project_service" "artifactregistry" {
+  project = var.project_id
+  service = "artifactregistry.googleapis.com"
+}
+
+resource "google_artifact_registry_repository" "image-repo" {
+  location      = var.region
+  repository_id = var.artifact_registry_repository_name
+  description   = "Repository to host application images"
+  format        = "DOCKER"
+
+  depends_on = [google_project_service.artifactregistry]
+}
+
+# IAM policy for Artifact Registry using default compute service account
+resource "google_artifact_registry_repository_iam_member" "gke_repository_access" {
+  location   = google_artifact_registry_repository.image-repo.location
+  repository = google_artifact_registry_repository.image-repo.name
+  role       = "roles/artifactregistry.reader"
+  member     = "serviceAccount:${data.google_project.project.number}-compute@developer.gserviceaccount.com"
+}
+
+# Project-level permissions for Artifact Registry
+resource "google_project_iam_member" "artifact_registry_reader" {
+  project = var.project_id
+  role    = "roles/artifactregistry.reader"
+  member  = "serviceAccount:${data.google_project.project.number}-compute@developer.gserviceaccount.com"
+}
+
+# Additional permissions that might be needed
+resource "google_project_iam_member" "storage_object_viewer" {
+  project = var.project_id
+  role    = "roles/storage.objectViewer"
+  member  = "serviceAccount:${data.google_project.project.number}-compute@developer.gserviceaccount.com"
+}
+
+# Also we need to be explicit that this is the default node SA for the container
+resource "google_project_iam_member" "default_container_sa" {
+  project = var.project_id
+  role    = "roles/container.defaultNodeServiceAccount"
+  member  = "serviceAccount:${data.google_project.project.number}-compute@developer.gserviceaccount.com"
+}
+
+### Hooking up the domain
+
+# Reserve a static external IP address
+resource "google_compute_global_address" "default" {
+  name = "${var.project_id}-global-ip"
+}
+
+# Reference existing DNS zone using a data source
+data "google_dns_managed_zone" "default" {
+  name = var.cloud_dns_zone_name
+}
+
+# Add an A record pointing to our static IP
+resource "google_dns_record_set" "default" {
+  name         = "${var.domain_name}." # Note: must end with a dot
+  type         = "A"
+  ttl          = 300
+  managed_zone = data.google_dns_managed_zone.default.name
+  rrdatas      = [google_compute_global_address.default.address]
+}
+
+# Add another for our api subdomain
+resource "google_dns_record_set" "api" {
+  name         = "api.${var.domain_name}." # Note: must end with a dot
+  type         = "A"
+  ttl          = 300
+  managed_zone = data.google_dns_managed_zone.default.name
+  rrdatas      = [google_compute_global_address.default.address]
+}
+
+# SSL Certificate
+resource "google_compute_managed_ssl_certificate" "default" {
+  name = "${var.project_id}-cert"
+  managed {
+    domains = [var.domain_name]
+  }
+}
+
+# Output the static IP address
+output "static_ip" {
+  value = google_compute_global_address.default.address
+}
+
+# Output the repository URL for use in other configurations
+output "repository_url" {
+  value = "${var.region}-docker.pkg.dev/${var.project_id}/${google_artifact_registry_repository.image-repo.repository_id}"
+}
+
+# Generate Helm values file
+resource "local_file" "helm_values" {
+  content = templatefile("${path.module}/helm-values.tftpl", {
+    repository_url = "${var.region}-docker.pkg.dev/${var.project_id}/${google_artifact_registry_repository.image-repo.repository_id}/"
+    static_ip      = google_compute_global_address.default.address
+    domain_name    = var.domain_name
+    project_id     = var.project_id
+  })
+  filename = "${path.module}/../helm/secretValues.yaml"
 }

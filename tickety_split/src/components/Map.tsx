@@ -1,9 +1,10 @@
-
 import { MapContainer, Polyline, TileLayer } from 'react-leaflet';
 import { useQuery } from "@tanstack/react-query";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 const getRailways = async () => {
-    const response = await fetch('http://127.0.0.1:8080/railways');
+    const response = await fetch(`${API_URL}/railways`);
     return await response.json();
 };
 

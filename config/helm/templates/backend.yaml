@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dispatch
+  namespace: {{ .Values.namespace }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dispatch
+  template:
+    metadata:
+      labels:
+        app: dispatch
+    spec:
+      containers:
+        - name: dispatch
+          image: {{ .Values.containerRegistry }}{{ .Values.apiImageName }}
+          imagePullPolicy: {{.Values.imagePullPolicy}}
+          ports:
+            - containerPort: 8080
+          env:
+            - name: RUST_BACKTRACE
+              value: "{{ .Values.rustBacktrace }}"
+            - name: RUST_ENV
+              value: {{ .Values.rustEnv }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dispatch
+  namespace: {{ .Values.namespace }}
+spec:
+  selector:
+    app: dispatch
+  ports:
+    - port: 8080
+      targetPort: 8080
+  type: {{ .Values.backendServiceType }}

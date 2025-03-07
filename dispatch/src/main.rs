@@ -40,7 +40,6 @@ async fn railways() -> impl Responder {
                 lat: 38.155868,
                 lon: -99.139451,
             },
-
             start: LatLon {
                 lat: 41.308550,
                 lon: -73.829527,
@@ -53,12 +52,16 @@ async fn railways() -> impl Responder {
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
+    println!("Starting server at http://0.0.0.0:8080");
     HttpServer::new(|| {
-        let cors = Cors::default().allowed_origin("http://localhost:5173");
+        let cors = Cors::default()
+            .allow_any_origin()
+            .allowed_methods(vec!["GET"])
+            .allowed_headers(vec!["Content-Type"]);
 
         App::new().wrap(cors).service(hello).service(railways)
     })
-    .bind(("127.0.0.1", 8080))?
+    .bind(("0.0.0.0", 8080))?
     .run()
     .await
 }
