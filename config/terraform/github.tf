@@ -58,8 +58,11 @@ resource "google_service_account_iam_binding" "github_wi_binding" {
 # Grant necessary GKE roles to the Service Account
 resource "google_project_iam_member" "gke_roles" {
   for_each = toset([
-    "roles/container.admin",    # Manage GKE clusters
-    "roles/container.developer" # Deploy workloads
+    "roles/container.admin",         # Manage GKE clusters
+    "roles/container.developer",     # Deploy workloads
+    "roles/container.clusterViewer", # View cluster details
+    "roles/container.clusterAdmin",  # Full access to GKE clusters
+    "roles/iam.serviceAccountTokenCreator"
   ])
   project = var.project_id
   role    = each.value
