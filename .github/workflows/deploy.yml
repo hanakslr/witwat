@@ -43,12 +43,11 @@ jobs:
       # helper for authentication
       - name: Configure Docker
         run: |-
-          gcloud auth configure-docker ${{ env.GAR_LOCATION }}-docker.pkg.dev
+          gcloud auth configure-docker ${{ env.GAR_LOCATION }}-docker.pkg.dev --quiet
           # Debug commands
-          echo "Checking Docker config..."
-          cat ~/.docker/config.json
-          echo "Checking credential helpers..."
-          docker info | grep "Credential Helper"
+
+          echo "Checking Docker info..."
+          docker info || true
 
       - name: Build and push images
         run: |
