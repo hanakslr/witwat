@@ -37,11 +37,7 @@ resource "google_iam_workload_identity_pool_provider" "github_provider" {
 
   # GH uses a single issuer URL - so some claims in the OIDC token may not be unique specifically to my deployment/org
   # These conditions are required to protect against spoofing - asserting that the action is from my repo and main branch
-  attribute_condition = format(
-    "assertion.ref==%q && assertion.repository==%q",
-    "refs/heads/main",
-    "${var.github_owner}/${var.github_repo}"
-  )
+  attribute_condition = "assertion.repository_owner == '${var.github_owner}'"
 }
 
 # Create a Service Account for GitHub Actions
