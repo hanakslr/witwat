@@ -1,0 +1,10 @@
+namespace: prod
+imagePullPolicy: Always
+frontendServiceType: ClusterIP
+backendServiceType: ClusterIP
+apiUrl: http://api.whatiftherewasatrain.com
+rustEnv: production
+rustBackTrace: 0
+apiImageName: dispatch:latest
+frontendImageName: tickety_split:latest
+frontendPort: 3000

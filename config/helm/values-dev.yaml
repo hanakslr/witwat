@@ -1,0 +1,11 @@
+namespace: dev
+imagePullPolicy: IfNotPresent
+frontendServiceType: LoadBalancer
+backendServiceType: LoadBalancer
+apiUrl: http://127.0.0.1:8080
+rustEnv: development
+rustBacktrace: 1
+frontendImageName: tickety_split:dev
+frontendPort: 5173
+apiImageName: dispatch:dev
+containerRegistry:
