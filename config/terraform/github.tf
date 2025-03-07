@@ -76,6 +76,18 @@ data "github_actions_public_key" "gh_public_key" {
   repository = var.github_repo
 }
 
+resource "github_actions_secret" "gcp_project" {
+  repository      = var.github_repo
+  secret_name     = "GCP_PROJECT"
+  plaintext_value = var.project_id
+}
+
+resource "github_actions_secret" "gcp_cluster_name" {
+  repository      = var.github_repo
+  secret_name     = "GKE_CLUSTER_NAME"
+  plaintext_value = var.cluster_name
+}
+
 resource "github_actions_secret" "gcp_sa_email" {
   repository      = var.github_repo
   secret_name     = "GCP_SERVICE_ACCOUNT_EMAIL"
