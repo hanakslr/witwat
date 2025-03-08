@@ -2,7 +2,7 @@ namespace: prod
 imagePullPolicy: Always
 frontendServiceType: ClusterIP
 backendServiceType: ClusterIP
-apiUrl: http://api.whatiftherewasatrain.com
+apiUrl: https://api.whatiftherewasatrain.com
 rustEnv: production
 rustBackTrace: 0
 apiImageName: dispatch:latest
