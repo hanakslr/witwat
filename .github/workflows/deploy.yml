@@ -57,3 +57,12 @@ jobs:
         with:
           cluster_name: "${{ env.GKE_CLUSTER }}"
           location: "${{ env.GKE_ZONE }}"
+
+      - name: Install Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: "latest"
+
+      - name: Deploy to GKE
+        run: |
+          helm upgrade witwat-dev config/helm --values config/helm/values-prod.yaml --set containerRegistry=${{ vars.GAR_URL }}/,staticIpAddress=${{ vars.STATIC_PUBLIC_IP }},domainName=whatiftherewasatrain.com,projectId=${{ secrets.GCP_PROJECT }}
