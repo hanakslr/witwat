@@ -53,6 +53,7 @@ jobs:
 
       # Get the GKE credentials so we can deploy to the cluster
       - name: "Set up GKE credentials"
+        id: "get-credentials"
         uses: "google-github-actions/get-gke-credentials@v2"
         with:
           cluster_name: "${{ env.GKE_CLUSTER }}"
@@ -64,5 +65,8 @@ jobs:
           version: "latest"
 
       - name: Deploy to GKE
+        env:
+          KUBECONFIG: ${{ steps.get-credentials.outputs.kubeconfig_path }}
         run: |
+          kubectl get nodes # Test connection
           helm upgrade witwat-dev config/helm --values config/helm/values-prod.yaml --set containerRegistry=${{ vars.GAR_URL }}/,staticIpAddress=${{ vars.STATIC_PUBLIC_IP }},domainName=whatiftherewasatrain.com,projectId=${{ secrets.GCP_PROJECT }}
