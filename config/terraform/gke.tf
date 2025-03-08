@@ -162,14 +162,6 @@ resource "google_dns_record_set" "api" {
   rrdatas      = [google_compute_global_address.default.address]
 }
 
-# SSL Certificate
-resource "google_compute_managed_ssl_certificate" "default" {
-  name = "${var.project_id}-cert"
-  managed {
-    domains = [var.domain_name]
-  }
-}
-
 # Output the static IP address
 output "static_ip" {
   value = google_compute_global_address.default.address
