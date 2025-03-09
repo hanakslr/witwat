@@ -9,15 +9,10 @@ while [[ "$#" -gt 0 ]]; do
     shift
 done
 
-# If not local, get the container registry from secretValues.yaml
+# If not local, ensure CONTAINER_REGISTRY environment variable is set
 if [ -z "$LOCAL" ]; then
-    if [ ! -f "config/helm/secretValues.yaml" ]; then
-        echo "Error: config/helm/secretValues.yaml not found. Run terraform apply first."
-        exit 1
-    fi
-    CONTAINER_REGISTRY=$(grep "containerRegistry:" config/helm/secretValues.yaml | awk '{print $2}')
     if [ -z "$CONTAINER_REGISTRY" ]; then
-        echo "Error: Could not find containerRegistry in secretValues.yaml"
+        echo "Error: CONTAINER_REGISTRY environment variable must be set when not building locally"
         exit 1
     fi
     echo "Using container registry: $CONTAINER_REGISTRY"
