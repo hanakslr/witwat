@@ -1,0 +1,11 @@
+{{- if eq .Values.namespace "prod" }}
+apiVersion: networking.gke.io/v1
+kind: ManagedCertificate
+metadata:
+  name: {{.Values.namespace}}-cert
+  namespace: {{.Values.namespace}}
+spec:
+  domains:
+    - {{.Values.domainName}}
+    - api.{{.Values.domainName}}
+{{- end }} 
