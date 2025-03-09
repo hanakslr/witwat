@@ -36,12 +36,6 @@ resource "google_container_cluster" "primary" {
     master_ipv4_cidr_block  = "172.16.0.0/28"
   }
 
-  master_authorized_networks_config {
-    cidr_blocks {
-      cidr_block = "${var.k8s_master_allowed_ip}/32"
-    }
-  }
-
   # Required for private clusters - GKE will auto-select appropriate ranges if not specified
   ip_allocation_policy {
     # Let GKE choose the ranges automatically
