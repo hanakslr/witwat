@@ -59,16 +59,6 @@ jobs:
           cluster_name: "${{ env.GKE_CLUSTER }}"
           location: "${{ env.GKE_ZONE }}"
 
-      - name: Diagnostic checks
-        run: |
-          echo "Checking GCP permissions..."
-          gcloud auth list
-          gcloud container clusters list
-          echo "Checking network connectivity..."
-          gcloud container clusters describe ${{ env.GKE_CLUSTER }} --zone ${{ env.GKE_ZONE }} --format="get(endpoint)"
-          echo "Checking firewall rules..."
-          gcloud compute firewall-rules list --format="table(name,network,direction,priority,sourceRanges.list():label=SRC_RANGES,destinationRanges.list():label=DEST_RANGES)"
-
       - name: Install Helm
         uses: azure/setup-helm@v3
         with:
@@ -79,5 +69,4 @@ jobs:
           KUBECONFIG: ${{ steps.get-credentials.outputs.kubeconfig_path }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          kubectl get nodes # Test connection
           helm upgrade witwat-dev config/helm --values config/helm/values-prod.yaml --set containerRegistry=${{ vars.GAR_URL }}/,staticIpAddress=${{ vars.STATIC_PUBLIC_IP }},domainName=whatiftherewasatrain.com,projectId=${{ secrets.GCP_PROJECT }}
