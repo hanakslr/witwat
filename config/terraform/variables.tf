@@ -1,3 +1,13 @@
+variable "github_repo" {
+  description = "Name of the repo"
+  type        = string
+}
+
+variable "github_owner" {
+  description = "Github owner or organization"
+  type        = string
+}
+
 variable "project_id" {
   description = "The ID of the GCP project"
   type        = string

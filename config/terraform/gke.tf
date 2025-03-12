@@ -37,8 +37,10 @@ resource "google_container_cluster" "primary" {
   }
 
   master_authorized_networks_config {
+    # IAM handles access - when private_nodes are true, access to the control plane needs to be explicit
     cidr_blocks {
-      cidr_block = "${var.k8s_master_allowed_ip}/32"
+      cidr_block   = "0.0.0.0/0"
+      display_name = "All networks"
     }
   }
 
@@ -60,8 +62,8 @@ resource "google_container_cluster" "primary" {
 
 # Separately Managed Node Pool
 resource "google_container_node_pool" "primary_nodes" {
-  name     = google_container_cluster.primary.name
-  version  = "1.31.5-gke.1169000"
+  name = google_container_cluster.primary.name
+
   location = "${var.region}-b"
   cluster  = google_container_cluster.primary.name
 
@@ -167,15 +169,19 @@ output "static_ip" {
   value = google_compute_global_address.default.address
 }
 
+locals {
+  repository_url = "${var.region}-docker.pkg.dev/${var.project_id}/${google_artifact_registry_repository.image-repo.repository_id}"
+}
+
 # Output the repository URL for use in other configurations
 output "repository_url" {
-  value = "${var.region}-docker.pkg.dev/${var.project_id}/${google_artifact_registry_repository.image-repo.repository_id}"
+  value = local.repository_url
 }
 
 # Generate Helm values file
 resource "local_file" "helm_values" {
   content = templatefile("${path.module}/helm-values.tftpl", {
-    repository_url = "${var.region}-docker.pkg.dev/${var.project_id}/${google_artifact_registry_repository.image-repo.repository_id}/"
+    repository_url = "${local.repository_url}/"
     static_ip      = google_compute_global_address.default.address
     domain_name    = var.domain_name
     project_id     = var.project_id

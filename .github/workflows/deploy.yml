@@ -1,0 +1,66 @@
+name: "Build and Deploy to GKE"
+on:
+  push:
+    branches:
+      - main
+
+env:
+  PROJECT_ID: ${{ secrets.GCP_PROJECT }}
+  GAR_LOCATION: "us-east1"
+  GKE_CLUSTER: ${{ secrets.GKE_CLUSTER_NAME }}
+  GKE_ZONE: "us-east1-b"
+
+jobs:
+  setup-build-publish-deploy:
+    name: "Setup, Build, Publish, and Deploy"
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - id: "auth"
+        name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WIP_PROVIDER }}
+          project_id: ${{ secrets.GCP_PROJECT }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT_EMAIL }}
+
+      - name: Setup gcloud
+        uses: "google-github-actions/setup-gcloud@v2"
+        with:
+          version: ">= 363.0.0"
+
+      # Configure Docker to use the gcloud command-line tool as a credential
+      # helper for authentication
+      - name: Configure Docker
+        run: |-
+          gcloud auth configure-docker ${{ env.GAR_LOCATION }}-docker.pkg.dev --quiet
+
+      - name: Build and push images
+        run: |
+          export CONTAINER_REGISTRY="${{ vars.GAR_URL }}/"
+          chmod +x config/scripts/build_and_push_images
+          ./config/scripts/build_and_push_images
+
+      # Get the GKE credentials so we can deploy to the cluster
+      - name: "Set up GKE credentials"
+        id: "get-credentials"
+        uses: "google-github-actions/get-gke-credentials@v2"
+        with:
+          cluster_name: "${{ env.GKE_CLUSTER }}"
+          location: "${{ env.GKE_ZONE }}"
+
+      - name: Install Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: "latest"
+
+      - name: Deploy to GKE
+        env:
+          KUBECONFIG: ${{ steps.get-credentials.outputs.kubeconfig_path }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          helm upgrade witwat-dev config/helm --values config/helm/values-prod.yaml --set containerRegistry=${{ vars.GAR_URL }}/,staticIpAddress=${{ vars.STATIC_PUBLIC_IP }},domainName=whatiftherewasatrain.com,projectId=${{ secrets.GCP_PROJECT }}
