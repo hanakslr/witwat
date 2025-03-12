@@ -36,6 +36,14 @@ resource "google_container_cluster" "primary" {
     master_ipv4_cidr_block  = "172.16.0.0/28"
   }
 
+  master_authorized_networks_config {
+    # IAM handles access - when private_nodes are true, access to the control plane needs to be explicit
+    cidr_blocks {
+      cidr_block   = "0.0.0.0/0"
+      display_name = "All networks"
+    }
+  }
+
   # Required for private clusters - GKE will auto-select appropriate ranges if not specified
   ip_allocation_policy {
     # Let GKE choose the ranges automatically
@@ -54,12 +62,7 @@ resource "google_container_cluster" "primary" {
 
 # Separately Managed Node Pool
 resource "google_container_node_pool" "primary_nodes" {
-  name    = google_container_cluster.primary.name
-  version = "1.31.5-gke.1233000"
-
-  management {
-    auto_upgrade = false
-  }
+  name = google_container_cluster.primary.name
 
   location = "${var.region}-b"
   cluster  = google_container_cluster.primary.name
