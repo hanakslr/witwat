@@ -54,8 +54,13 @@ resource "google_container_cluster" "primary" {
 
 # Separately Managed Node Pool
 resource "google_container_node_pool" "primary_nodes" {
-  name     = google_container_cluster.primary.name
-  version  = "1.31.5-gke.1169000"
+  name    = google_container_cluster.primary.name
+  version = "1.31.5-gke.1233000"
+
+  management {
+    auto_upgrade = false
+  }
+
   location = "${var.region}-b"
   cluster  = google_container_cluster.primary.name
 
